@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+.chat-place{
+	display: block;
+	width: 700px;
+	height: 1000px;
+	overflow: scroll;
+	background: #ccc;
+	margin: 0 auto;
+	padding: 20px;
+}
+.chat-place .info{
+	margin: 0 auto;
+	width: 250px;
+	text-align: center;
+}
+#messages-field .leftmessage{
+	
+}
+.info input{
+	padding: 10px;
+}
+.row label {
+display: block;
+}
+.info input[type="submit"]{
+	margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+<div class="chat-place">
+	<div class="info">
+		<h1>Web Sockets!</h1>
+
+		<form action="" name="messages">
+			<div class="row">
+				<label>Name: </label>
+				<input type="text" id="nameField" autocomplete="off"  name="fname"/>
+			</div>
+			<div class="row">
+				<label>Text: </label>
+				<input type="text" id="textField" autocomplete="off" name="msg"/>
+			</div>
+			<div class="row"><input type="submit" value="go!"/></div>
+		</form>
+		<div id="status"></div>
+	</div>
+
+	<div id="messages-field">
+		<div class="leftmessage">
+			<!--<h3>Ivan: <span>Hello!</span></h3>-->
+			
+		</div>
+	</div>
+</div>
+<script>
+	window.onload = function(){
+		//var socket = new WebSocket('ws://echo.websocket.org');
+		var socket = new WebSocket('ws://localhost:8080');
+		var status = document.getElementById('status');
+		socket.onopen = function(event){
+			
+				status.innerHTML = 'connected';
+			
+			
+		};
+		socket.onclose = function(event){
+			if( event.wasClean ){
+				status.innerHTML = 'closed';
+			}else{
+				status.innerHTML = 'closed some';
+			}
+		};
+		socket.onmessage = function(event){
+			let mess = JSON.parse(event.data);
+			var div = document.getElementById('messages-field');
+			var innerDiv = document.createElement('div');
+			innerDiv.classList.add('leftmessage');
+			var h3 = document.createElement('h3');
+			h3.innerHTML = `${mess.name}: ${mess.msg}`;
+			innerDiv.appendChild(h3);
+			div.appendChild(innerDiv);
+			document.getElementById('nameField').value = '';
+			document.getElementById('textField').value = '';
+		};
+		
+		
+		socket.onerror = function(event){
+			status.innerHTML = 'error ' + event.message;
+		};
+		
+		
+		document.forms['messages'].onsubmit = function(){
+
+			let message = {
+				name: this.fname.value,
+				msg: this.msg.value
+			}
+
+			socket.send(JSON.stringify(message));
+			
+			return false;
+		}
+		//return false;
+	};
+	
+</script>
+</body>
+</html>
